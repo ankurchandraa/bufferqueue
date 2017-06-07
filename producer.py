@@ -1,9 +1,4 @@
 import json
-import socket
-
-import sys
-
-import cPickle
 
 from api_response import ApiResponse
 from socket_client import BQueueSocketClient
@@ -17,6 +12,11 @@ class BQueueProducer(BQueueSocketClient):
         data_dict = {'queue': queue, 'data': data}
         self.send_data(json.dumps(data_dict))
 
+
+    """
+    buffer_size - is the size as int when the buffer data send to subscribers
+    queue_name - name of queue to create
+    """
     def create_queue(self, queue_name, buffer_size):
         data = {
             'queue': queue_name,

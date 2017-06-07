@@ -2,14 +2,21 @@ import json
 from collections import defaultdict
 
 from api_response import ApiResponse
+from common_logger import logger
 from socket_client import BQueueSocketClient
 
+"""
+BufferQueueMap is the main backbone for bufferqueue.
+queue_map param will hold the multiple queues with different names
+subscriber_map will keep the subsciber machine host and port
+queue_size_definition holds the size of each queue
+queue_size_counter holds the current size of the each queue in queue_map
+"""
 
 class BufferQueueMap(object):
     def __init__(self):
         self.queue_map = defaultdict(list)
         self.subscriber_map = defaultdict(list)
-        self.producer_map = defaultdict(list)
         self.queue_size_definition = defaultdict(int)
         self.queue_size_counter = defaultdict(int)
 
@@ -23,11 +30,8 @@ class BufferQueueMap(object):
         return ApiResponse(True, 'queue created')
 
     def subscribe_to_queue(self, subscriber_id, queue):
-        response = ApiResponse(True, "Succesfully subscribed")
-        if self.is_valid_queue(queue):
-            self.subscriber_map[queue].append(subscriber_id)
-        else:
-            response.update(False, "Invalid queue name")
+        response = ApiResponse(True, "Succesfully subscribed to {}".format(queue))
+        self.subscriber_map[queue].append(subscriber_id)
         return response
 
     def append_data_to_queue(self, queue, data):
@@ -47,7 +51,7 @@ class BufferQueueMap(object):
 
     def is_queue_full(self, queue_name):
         if self.queue_size_counter[queue_name] == self.queue_size_definition[queue_name]:
-            print 'broadcasting data to subscribers'
+            logger.info('{} queue is full, broadcasting data to subscribers'.format(queue_name))
             subscriber_list = self.subscriber_map[queue_name]
             data = self.queue_map[queue_name]
             self.publish_data_to_consumer(subscriber_list, data)
@@ -68,6 +72,7 @@ class BufferQueueMap(object):
         host, port = self.get_subscriber_host(subscriber)
         client = BQueueSocketClient(hostname=host, port=port)
         client.send_data(json.dumps(data))
+        logger.info("sending data to host {}".format(host))
 
     def get_subscriber_host(self, host_string):
         temp_list = host_string.split(':')

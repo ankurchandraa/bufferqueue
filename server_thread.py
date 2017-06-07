@@ -1,6 +1,9 @@
 import json
 from threading import Thread
 
+from common_logger import logger
+from constants import BUFFER_SIZE
+
 
 class ThreadedServer(Thread):
     def __init__(self, socket, **kwargs):
@@ -11,9 +14,9 @@ class ThreadedServer(Thread):
 
     def run(self):
         while 1:
-            print 'Client Sent'
-            data = self.sock.recv(1024)
-            print data
+            logger.info('Server thread waiting for data')
+            data = self.sock.recv(BUFFER_SIZE)
+            logger.info(data)
             if data:
                 data = json.loads(data)
                 response = self.process_data(data)

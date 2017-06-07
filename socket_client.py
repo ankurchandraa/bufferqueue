@@ -1,6 +1,7 @@
 import socket
 
-import sys
+from common_logger import logger
+from constants import BUFFER_SIZE
 
 
 class BQueueSocketClient(object):
@@ -19,10 +20,10 @@ class BQueueSocketClient(object):
 
     def send_data(self, data):
         message = data
-        print >> sys.stderr, 'sending "%s"' % message
+        logger.info("sending data {} from client".format(message))
         self.sock.send(data)
-        data = self.sock.recv(1024)
-        print >> sys.stderr, 'received "%s"' % data
+        data = self.sock.recv(BUFFER_SIZE)
+        logger.info("receive from server {}".format(data))
 
     def close_connection(self):
         self.sock.close()

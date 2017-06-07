@@ -1,7 +1,5 @@
 import socket
 
-MSGLEN = 1024
-
 
 class BQueueSocketServer(object):
     def __init__(self, **kwargs):

@@ -1,18 +1,15 @@
+import SocketServer
 import json
 import socket
 
-import sys
-
-import cPickle
-from threading import Thread
-
 from api_response import ApiResponse
+from common_logger import logger
 from server_thread import ThreadedServer
 from socket_server import BQueueSocketServer
 
 
 class BQueueSubscriber(object):
-    def __init__(self, sock=None, hostname=None, port=None):
+    def __init__(self, sock=None, hostname=None, port=None, callback=None):
         if sock is None:
             self.sock = socket.socket(
                 socket.AF_INET, socket.SOCK_STREAM)
@@ -28,19 +25,26 @@ class BQueueSubscriber(object):
         self.server_port = 11000
         self.consumer_listener = BQueueSocketServer(**{'port': self.server_port})
         self.consumer_listener.bind_thread = self.bind_thread
+        self.callback = callback
 
     def bind_thread(self, clientsocket):
-        ConsumerListenerThread(clientsocket)
+        ConsumerListenerThread(clientsocket, **{'callback': self.callback})
 
     def send_data(self, data):
         message = data
-        print >> sys.stderr, 'sending "%s"' % message
+        logger.info("sending data {} from subscriber".format(message))
         self.sock.send(data)
-        data = self.sock.recv(1024)
-        print >> sys.stderr, 'received "%s"' % data
+        data = self.sock.recv(2048)
+        logger.info("{} receive from bufferqueue in subscriber".format(data))
 
     def close_connection(self):
         self.sock.close()
+
+    def listen(self):
+        try:
+            self.consumer_listener.listen()
+        except SocketServer.socket.error:
+            logger.exception("subscriber: port already in use")
 
     def subscribe_queue(self, queue_name):
         data = {
@@ -50,10 +54,9 @@ class BQueueSubscriber(object):
         }
         self.send_data(json.dumps(data))
 
-        self.consumer_listener.listen()
-
 
 class ConsumerListenerThread(ThreadedServer):
-
     def process_data(self, data):
+        # callback method call. If will invoke callback method in subscriber
+        self.args['callback'](data)
         return ApiResponse(True, 'subscriber received data')

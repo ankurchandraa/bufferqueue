@@ -1,5 +1,6 @@
 import socket
 
+# Base class for socket server
 
 class BQueueSocketServer(object):
     def __init__(self, **kwargs):

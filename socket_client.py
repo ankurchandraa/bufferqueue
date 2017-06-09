@@ -3,6 +3,7 @@ import socket
 from common_logger import logger
 from constants import BUFFER_SIZE
 
+# Base class for socket clicnt
 
 class BQueueSocketClient(object):
     def __init__(self, sock=None, hostname=None, port=None):

@@ -7,6 +7,8 @@ from common_logger import logger
 from server_thread import ThreadedServer
 from socket_server import BQueueSocketServer
 
+# Subscriber class send request to queue server to subscribe the ip:port.
+# If queue server having anything for this subscriber, It sends to this subscriber on its server port
 
 class BQueueSubscriber(object):
     def __init__(self, sock=None, hostname=None, port=None, callback=None):

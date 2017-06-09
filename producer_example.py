@@ -14,3 +14,7 @@ if __name__ == "__main__":
     for i in range(50000):
         rand_no = randint(1, 5)
         producer.publish_data('test' + str(rand_no), {'sample': 'data'})
+        producer.publish_data('test' + str(rand_no), 134343)
+        producer.publish_data('test' + str(rand_no), 'test string')
+        producer.publish_data('test' + str(rand_no), ('tuple', 'test'))
+        producer.publish_data('test' + str(rand_no), [12, 'test data in list', 333333])

@@ -1,5 +1,7 @@
 # Bufferqueue
 
+Requirements
+- Python 2.7
 
 Features
 - In memory pub sub

@@ -17,9 +17,7 @@ class ThreadedServer(Thread):
         while 1:
             logger.info('Server thread waiting for data')
             data = self.sock.recv(BUFFER_SIZE)
-            logger.info(data)
             if data:
-                data = json.loads(data)
                 response = self.process_data(data)
                 self.sock.send(response.get_message())
             else:

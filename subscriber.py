@@ -4,6 +4,7 @@ import socket
 
 from api_response import ApiResponse
 from common_logger import logger
+from constants import LOCALHOST
 from server_thread import ThreadedServer
 from socket_server import BQueueSocketServer
 
@@ -16,7 +17,7 @@ class BQueueSubscriber(object):
             self.sock = socket.socket(
                 socket.AF_INET, socket.SOCK_STREAM)
             if not hostname:
-                self.hostname = socket.gethostname()
+                self.hostname = LOCALHOST
             if not port:
                 self.port = 10000
         else:
@@ -52,7 +53,7 @@ class BQueueSubscriber(object):
         data = {
             'queue': queue_name,
             'operation': 'subscribe',
-            'host': socket.gethostname() + ':' + str(self.server_port)
+            'host': LOCALHOST + ':' + str(self.server_port)
         }
         self.send_data(json.dumps(data))
 

@@ -18,7 +18,7 @@ Steps to run
 
 When you run producer_example.py, you will be able to see data flowing from publisher to subscriber in console
 
-You can modify te buffer size while creating queue in producer_example.py
+You can modify the buffer size while creating queue in producer_example.py
 
 Future Enhancements
 - Sending and receving data in chunks

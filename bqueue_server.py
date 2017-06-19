@@ -1,3 +1,5 @@
+import json
+
 from buffer_map import BufferQueueMap, logger
 from server_thread import ThreadedServer
 from socket_server import BQueueSocketServer
@@ -17,6 +19,7 @@ class BQueueServer(BQueueSocketServer):
 
 class BQueueServerThread(ThreadedServer):
     def process_data(self, data):
+        data = json.loads(data)
         buffer_map = self.args['buffer_map']
         if data.get('operation') == 'create_queue':
             logger.info("create queue request received")

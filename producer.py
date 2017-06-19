@@ -9,7 +9,7 @@ class BQueueProducer(BQueueSocketClient):
     def publish_data(self, queue, data):
         if not queue:
             return ApiResponse(False, "queue name is mandatory")
-        data_dict = {'queue': queue, 'data': data}
+        data_dict = {'queue': queue, 'data': json.dumps(data)}
         self.send_data(json.dumps(data_dict))
 
 

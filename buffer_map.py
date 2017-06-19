@@ -1,5 +1,9 @@
 import json
+import socket
+import threading
 from collections import defaultdict
+
+import sys
 
 from api_response import ApiResponse
 from common_logger import logger
@@ -16,9 +20,10 @@ queue_size_counter holds the current size of the each queue in queue_map
 class BufferQueueMap(object):
     def __init__(self):
         self.queue_map = defaultdict(list)
-        self.subscriber_map = defaultdict(list)
+        self.subscriber_map = defaultdict(set)
         self.queue_size_definition = defaultdict(int)
         self.queue_size_counter = defaultdict(int)
+        self.lock = threading.Lock()
 
     def get_queue(self, queue_name):
         if self.is_valid_queue(queue_name):
@@ -31,17 +36,21 @@ class BufferQueueMap(object):
 
     def subscribe_to_queue(self, subscriber_id, queue):
         response = ApiResponse(True, "Succesfully subscribed to {}".format(queue))
-        self.subscriber_map[queue].append(subscriber_id)
+        self.subscriber_map[queue].add(subscriber_id)
         return response
 
     def append_data_to_queue(self, queue, data):
-        if self.is_valid_queue(queue):
-            self.queue_map[queue].append(data)
-            self.queue_size_counter[queue] += 1
-            self.is_queue_full(queue)
-            return ApiResponse(True, "Data published on queue {}".format(queue))
-        else:
-            return ApiResponse(False, "Queue not present")
+        try:
+            self.lock.acquire()
+            if self.is_valid_queue(queue):
+                self.queue_map[queue].append(data)
+                self.queue_size_counter[queue] += 1
+                self.is_queue_full(queue)
+                return ApiResponse(True, "Data published on queue {}".format(queue))
+            else:
+                return ApiResponse(False, "Queue not present")
+        finally:
+            self.lock.release()
 
     def is_valid_queue(self, queue):
         if (isinstance(queue, unicode) or isinstance(queue, str)) \
@@ -53,16 +62,17 @@ class BufferQueueMap(object):
         if self.queue_size_counter[queue_name] == self.queue_size_definition[queue_name]:
             logger.info('{} queue is full, broadcasting data to subscribers'.format(queue_name))
             subscriber_list = self.subscriber_map[queue_name]
-            data = self.queue_map[queue_name]
+            logger.info('available subscribers for queue {} - {}'.format(queue_name, subscriber_list))
+            data = json.dumps({'data': self.queue_map[queue_name], 'queue': queue_name})
             self.publish_data_to_consumer(subscriber_list, data)
             self.clear_queue(queue_name)
 
     def clear_queue(self, queue_name):
-        self.queue_map[queue_name] = []
-        self.queue_size_counter[queue_name] = 0
+        del self.queue_map[queue_name][:int(self.queue_size_definition[queue_name])]
+        self.queue_size_counter[queue_name] = len(self.queue_map[queue_name])
 
     def publish_data_to_consumer(self, subscriber_list, data):
-        if isinstance(subscriber_list, list):
+        if isinstance(subscriber_list, set):
             for subscriber in subscriber_list:
                 self.send_data_to_host(subscriber, data)
         elif isinstance(subscriber_list, unicode) or isinstance(subscriber_list, str):
@@ -70,9 +80,13 @@ class BufferQueueMap(object):
 
     def send_data_to_host(self, subscriber, data):
         host, port = self.get_subscriber_host(subscriber)
-        client = BQueueSocketClient(hostname=host, port=port)
-        client.send_data(json.dumps(data))
-        logger.info("sending data to host {}".format(host))
+        try:
+            client = BQueueSocketClient(hostname=host, port=port)
+            client.send_data(data)
+            logger.info("sending data to host {} with size {}".format(host, sys.getsizeof(data)))
+        except socket.error, e:
+            if 'Connection refused' in e:
+                logger.error('*** Connection refused ***')
 
     def get_subscriber_host(self, host_string):
         temp_list = host_string.split(':')

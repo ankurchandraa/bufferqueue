@@ -2,11 +2,13 @@ import json
 import socket
 import sys
 import threading
+import traceback
+from collections import defaultdict
 
-from bq_server.persistence_wrapper import PersistenceWrapper
-from common_server_module.socket_client import BQueueSocketClient
-from common_util.api_response import ApiResponse
-from common_util.common_logger import logger
+from api_response import ApiResponse
+from common_logger import logger
+from persistence_wrapper import PersistenceWrapper
+from socket_client import BQueueSocketClient
 
 """
 BufferQueueMap is the main backbone for bufferqueue.
@@ -19,6 +21,12 @@ queue_size_counter holds the current size of the each queue in queue_map
 class BufferQueueMap(object):
 
     def __init__(self):
+
+        self.lock = threading.Lock()
+        # self.queue_map = defaultdict(list)
+        # self.subscriber_map = defaultdict(set)
+        # self.queue_size_definition = defaultdict(int)
+        # self.queue_size_counter = defaultdict(int)
         self.persistent_wrapper = PersistenceWrapper()
         self.queue_size_definition = self.persistent_wrapper.restore_queue()
         queue_list = self.queue_size_definition.keys()
@@ -39,6 +47,7 @@ class BufferQueueMap(object):
 
     def subscribe_to_queue(self, subscriber_id, queue):
         response = ApiResponse(True, "Succesfully subscribed to {}".format(queue))
+        self.persistent_wrapper.persist_subscriber(queue, subscriber_id)
         self.subscriber_map[queue].add(subscriber_id)
         return response
 
@@ -56,6 +65,10 @@ class BufferQueueMap(object):
                 return ApiResponse(True, "Data published on queue {}".format(queue))
             else:
                 return ApiResponse(False, "Queue not present")
+
+        except Exception as e:
+            logger.error('not able to add data to queue')
+            traceback.print_exc()
         finally:
             self.lock.release()
 

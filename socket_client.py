@@ -1,7 +1,7 @@
 import socket
 
-from common_util.common_logger import logger
-from common_util.constants import BUFFER_SIZE, LOCALHOST, PRINT_DATA_LOG
+from common_logger import logger
+from constants import BUFFER_SIZE, LOCALHOST, PRINT_DATA_LOG
 
 
 # Base class for socket clicnt

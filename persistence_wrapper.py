@@ -2,7 +2,7 @@ from collections import defaultdict
 
 import redis
 
-from common_util.constants import REDIS_SERVER, REDIS_PORT
+from constants import REDIS_SERVER, REDIS_PORT
 
 
 class PersistenceWrapper(object):
@@ -37,7 +37,7 @@ class PersistenceWrapper(object):
         pipeline.execute()
 
     def persist_subscriber(self, queue, subscriber):
-        self.redis_connection.sadd(self.REDIS_QUEUE_SUBSCRIBER_MAP, subscriber)
+        self.redis_connection.sadd(self.REDIS_QUEUE_SUBSCRIBER_MAP%queue, subscriber)
 
     def restore_subscriber_map(self, queue_list):
         subscriber_map = defaultdict(set)
@@ -54,6 +54,9 @@ class PersistenceWrapper(object):
     def restore_queue_size_counter(self, queue_list):
         queue_size_counter = defaultdict(set)
         for queue in queue_list:
-            queue_size_counter[queue] = self.redis_connection.get(self.REDIS_QUEUE_COUNTER_KEY % queue)
+            counter_value = self.redis_connection.get(self.REDIS_QUEUE_COUNTER_KEY % queue)
+            if not counter_value:
+                counter_value = 0
+            queue_size_counter[queue] = int(counter_value)
         return queue_size_counter
 

@@ -1,14 +1,7 @@
-import os
-
-import sys
-
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-sys.path.insert(0, BASE_DIR)
-
 import json
 
-from common_util.common_logger import logger
-from common_util.constants import LOCALHOST, PRINT_DATA_LOG
+from common_logger import logger
+from constants import LOCALHOST, PRINT_DATA_LOG
 from subscriber import BQueueSubscriber
 
 

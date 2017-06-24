@@ -2,11 +2,11 @@ import SocketServer
 import json
 import socket
 
-from common_server_module.server_thread import ThreadedServer
-from common_server_module.socket_server import BQueueSocketServer
-from common_util.api_response import ApiResponse
-from common_util.common_logger import logger
-from common_util.constants import LOCALHOST, BUFFER_SIZE
+from api_response import ApiResponse
+from common_logger import logger
+from constants import LOCALHOST, BUFFER_SIZE
+from server_thread import ThreadedServer
+from socket_server import BQueueSocketServer
 
 
 # Subscriber class send request to queue server to subscribe the ip:port.

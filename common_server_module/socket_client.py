@@ -1,10 +1,12 @@
 import socket
 
-from common_logger import logger
-from constants import BUFFER_SIZE, LOCALHOST, PRINT_DATA_LOG
+
+from common_util.common_logger import logger
 
 
 # Base class for socket clicnt
+from common_util.constants import LOCALHOST, BUFFER_SIZE, PRINT_DATA_LOG
+
 
 class BQueueSocketClient(object):
     def __init__(self, sock=None, hostname=None, port=None):

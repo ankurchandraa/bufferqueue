@@ -3,12 +3,11 @@ import socket
 import sys
 import threading
 import traceback
-from collections import defaultdict
 
-from api_response import ApiResponse
-from common_logger import logger
-from persistence_wrapper import PersistenceWrapper
-from socket_client import BQueueSocketClient
+from common_server_module.socket_client import BQueueSocketClient
+from common_util.api_response import ApiResponse
+from common_util.common_logger import logger
+from persistence_backbone.persistence_wrapper import PersistenceWrapper
 
 """
 BufferQueueMap is the main backbone for bufferqueue.

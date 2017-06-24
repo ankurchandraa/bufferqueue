@@ -2,7 +2,7 @@ from collections import defaultdict
 
 import redis
 
-from constants import REDIS_SERVER, REDIS_PORT
+from common_util.constants import REDIS_SERVER, REDIS_PORT
 
 
 class PersistenceWrapper(object):

@@ -6,7 +6,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 print BASE_DIR
 sys.path.insert(0, BASE_DIR)
 
-from constants import LOCALHOST
+from common_util.constants import LOCALHOST
 from producer import BQueueProducer
 
 if __name__ == "__main__":

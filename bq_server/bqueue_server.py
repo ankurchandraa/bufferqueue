@@ -1,9 +1,10 @@
 import json
 
+
 from buffer_map import BufferQueueMap
-from common_logger import logger
-from server_thread import ThreadedServer
-from socket_server import BQueueSocketServer
+from common_server_module.server_thread import ThreadedServer
+from common_server_module.socket_server import BQueueSocketServer
+from common_util.common_logger import logger
 
 
 class BQueueServer(BQueueSocketServer):

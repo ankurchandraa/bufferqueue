@@ -2,11 +2,12 @@ import SocketServer
 import json
 import socket
 
-from api_response import ApiResponse
-from common_logger import logger
-from constants import LOCALHOST
-from server_thread import ThreadedServer
-from socket_server import BQueueSocketServer
+from common_server_module.server_thread import ThreadedServer
+from common_server_module.socket_server import BQueueSocketServer
+from common_util.api_response import ApiResponse
+from common_util.common_logger import logger
+from common_util.constants import LOCALHOST, BUFFER_SIZE
+
 
 # Subscriber class send request to queue server to subscribe the ip:port.
 # If queue server having anything for this subscriber, It sends to this subscriber on its server port
@@ -37,7 +38,7 @@ class BQueueSubscriber(object):
         message = data
         logger.info("sending data {} from subscriber".format(message))
         self.sock.send(data)
-        data = self.sock.recv(2048)
+        data = self.sock.recv(BUFFER_SIZE)
         logger.info("{} receive from bufferqueue in subscriber".format(data))
 
     def close_connection(self):

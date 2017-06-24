@@ -1,7 +1,6 @@
 import socket
 
-# Base class for socket server
-from constants import LOCALHOST
+from common_util.constants import LOCALHOST
 
 
 class BQueueSocketServer(object):

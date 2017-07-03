@@ -1,18 +1,23 @@
-import socket
-from random import randint
+import os
 
-from constants import LOCALHOST
+import sys
+
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+print BASE_DIR
+sys.path.insert(0, BASE_DIR)
+
+from common_util.constants import LOCALHOST
 from producer import BQueueProducer
 
 if __name__ == "__main__":
     producer = BQueueProducer(hostname=LOCALHOST, port=10000)
-    producer.create_queue('test1', 1000)
-    producer.create_queue('test2', 1000)
-    producer.create_queue('test3', 1000)
-    producer.create_queue('test4', 1000)
-    producer.create_queue('test5', 1000)
+    producer.create_queue('test1', 10)
+    producer.create_queue('test2', 10)
+    producer.create_queue('test3', 10)
+    producer.create_queue('test4', 10)
+    producer.create_queue('test5', 10)
 
-    for i in range(50000):
+    for i in range(5):
         producer.publish_data('test' + str(1), {'sample': 'data'})
         producer.publish_data('test' + str(2), 134343)
         producer.publish_data('test' + str(3), 'test string')

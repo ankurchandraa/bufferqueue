@@ -1,10 +1,11 @@
-import json
 from threading import Thread
 
-from common_logger import logger
-from constants import BUFFER_SIZE
+
+from common_util.common_logger import logger
 
 # A base class to handle server thread
+from common_util.constants import BUFFER_SIZE
+
 
 class ThreadedServer(Thread):
     def __init__(self, socket, **kwargs):

@@ -1,9 +1,14 @@
-import json
-import socket
-import threading
+import os
 
-from common_logger import logger
-from constants import LOCALHOST, PRINT_DATA_LOG
+import sys
+
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+print BASE_DIR
+sys.path.insert(0, BASE_DIR)
+import json
+
+from common_util.common_logger import logger
+from common_util.constants import PRINT_DATA_LOG, LOCALHOST
 from subscriber import BQueueSubscriber
 
 
@@ -29,7 +34,7 @@ def increment_counter(count):
 
 
 if __name__ == "__main__":
-    subscriber = BQueueSubscriber(hostname=LOCALHOST, port=10000, callback=callback_method)
+    subscriber = BQueueSubscriber(hostname=LOCALHOST, s_port=11001, callback=callback_method)
     subscriber.subscribe_queue('test1')
     subscriber.subscribe_queue('test2')
     subscriber.subscribe_queue('test3')

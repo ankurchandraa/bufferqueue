@@ -1,8 +1,10 @@
 import json
 
-from buffer_map import BufferQueueMap, logger
-from server_thread import ThreadedServer
-from socket_server import BQueueSocketServer
+
+from buffer_map import BufferQueueMap
+from common_server_module.server_thread import ThreadedServer
+from common_server_module.socket_server import BQueueSocketServer
+from common_util.common_logger import logger
 
 
 class BQueueServer(BQueueSocketServer):
@@ -27,6 +29,9 @@ class BQueueServerThread(ThreadedServer):
         elif data.get('operation') == 'subscribe':
             logger.info("queue subscribe request received")
             return buffer_map.subscribe_to_queue(data.get('host'), data.get('queue'))
+        elif data.get('operation') == 'delete_queue':
+            logger.info("queue delete request received")
+            return buffer_map.delete_queue(data.get('queue'))
         elif data.get('queue'):
             logger.info("add data to queue request received")
             return buffer_map.append_data_to_queue(data.get('queue'), data.get('data'))

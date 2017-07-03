@@ -1,13 +1,13 @@
 import json
 import socket
-import threading
-from collections import defaultdict
-
 import sys
+import threading
+import traceback
 
-from api_response import ApiResponse
-from common_logger import logger
-from socket_client import BQueueSocketClient
+from common_server_module.socket_client import BQueueSocketClient
+from common_util.api_response import ApiResponse
+from common_util.common_logger import logger
+from persistence_backbone.persistence_wrapper import PersistenceWrapper
 
 """
 BufferQueueMap is the main backbone for bufferqueue.
@@ -18,11 +18,20 @@ queue_size_counter holds the current size of the each queue in queue_map
 """
 
 class BufferQueueMap(object):
+
     def __init__(self):
-        self.queue_map = defaultdict(list)
-        self.subscriber_map = defaultdict(set)
-        self.queue_size_definition = defaultdict(int)
-        self.queue_size_counter = defaultdict(int)
+
+        self.lock = threading.Lock()
+        # self.queue_map = defaultdict(list)
+        # self.subscriber_map = defaultdict(set)
+        # self.queue_size_definition = defaultdict(int)
+        # self.queue_size_counter = defaultdict(int)
+        self.persistent_wrapper = PersistenceWrapper()
+        self.queue_size_definition = self.persistent_wrapper.restore_queue()
+        queue_list = self.queue_size_definition.keys()
+        self.queue_map = self.persistent_wrapper.restore_queue_data(queue_list)
+        self.subscriber_map = self.persistent_wrapper.restore_subscriber_map(queue_list)
+        self.queue_size_counter = self.persistent_wrapper.restore_queue_size_counter(queue_list)
         self.lock = threading.Lock()
 
     def get_queue(self, queue_name):
@@ -31,24 +40,54 @@ class BufferQueueMap(object):
         return None
 
     def add_queue(self, queue_name, buffer_size):
+        self.lock.acquire()
+        if self.is_queue_exists(queue_name):
+            self.lock.release()
+            return ApiResponse(True, 'queue already exists')
+        self.persistent_wrapper.add_queue(queue_name, buffer_size)
         self.queue_size_definition[queue_name] = buffer_size
+        self.lock.release()
         return ApiResponse(True, 'queue created')
+
+    def is_queue_exists(self, queue_name):
+        if queue_name in  self.queue_size_definition:
+            return True
+        return False
 
     def subscribe_to_queue(self, subscriber_id, queue):
         response = ApiResponse(True, "Succesfully subscribed to {}".format(queue))
+        self.persistent_wrapper.persist_subscriber(queue, subscriber_id)
         self.subscriber_map[queue].add(subscriber_id)
         return response
+
+    def delete_queue(self, queue_name):
+        self.lock.acquire()
+        if self.is_queue_exists(queue_name):
+            self.lock.release()
+            return ApiResponse(True, 'queue does not exists')
+        self.persistent_wrapper.delete_queue(queue_name)
+        del self.queue_size_definition[queue_name]
+        self.lock.release()
+        return ApiResponse(True, 'queue deleted')
 
     def append_data_to_queue(self, queue, data):
         try:
             self.lock.acquire()
             if self.is_valid_queue(queue):
+                self.persistent_wrapper.persist_queue_data(queue, data)
                 self.queue_map[queue].append(data)
+
                 self.queue_size_counter[queue] += 1
+                self.persistent_wrapper.increament_queue_counter(queue)
+
                 self.is_queue_full(queue)
                 return ApiResponse(True, "Data published on queue {}".format(queue))
             else:
                 return ApiResponse(False, "Queue not present")
+
+        except Exception as e:
+            logger.error('not able to add data to queue')
+            traceback.print_exc()
         finally:
             self.lock.release()
 
@@ -70,6 +109,7 @@ class BufferQueueMap(object):
     def clear_queue(self, queue_name):
         del self.queue_map[queue_name][:int(self.queue_size_definition[queue_name])]
         self.queue_size_counter[queue_name] = len(self.queue_map[queue_name])
+        self.persistent_wrapper.reset_queue(queue_name, self.queue_size_definition[queue_name])
 
     def publish_data_to_consumer(self, subscriber_list, data):
         if isinstance(subscriber_list, set):

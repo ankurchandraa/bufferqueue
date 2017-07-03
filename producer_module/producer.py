@@ -1,7 +1,7 @@
 import json
 
-from api_response import ApiResponse
-from socket_client import BQueueSocketClient
+from common_server_module.socket_client import BQueueSocketClient
+from common_util.api_response import ApiResponse
 
 
 class BQueueProducer(BQueueSocketClient):

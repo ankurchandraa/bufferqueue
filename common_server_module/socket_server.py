@@ -1,5 +1,6 @@
 import socket
 
+from common_util.common_logger import logger
 from common_util.constants import LOCALHOST
 
 
@@ -22,5 +23,11 @@ class BQueueSocketServer(object):
 
         self.sock.listen(5)
         while True:
-            clientsocket, address = self.sock.accept()
-            self.bind_thread(clientsocket)
+            try:
+                clientsocket, address = self.sock.accept()
+                self.bind_thread(clientsocket)
+            except KeyboardInterrupt as e:
+                logger.exception('------------Keyboard termination-------------Disconnecting')
+            finally:
+                self.sock.shutdown()
+                self.sock.close()

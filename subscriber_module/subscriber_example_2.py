@@ -34,7 +34,7 @@ def increment_counter(count):
 
 
 if __name__ == "__main__":
-    subscriber = BQueueSubscriber(hostname=LOCALHOST, callback=callback_method)
+    subscriber = BQueueSubscriber(hostname=LOCALHOST, s_port=11001, callback=callback_method)
     subscriber.subscribe_queue('test1')
     subscriber.subscribe_queue('test2')
     subscriber.subscribe_queue('test3')

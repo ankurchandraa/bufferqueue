@@ -18,6 +18,9 @@ class PersistenceWrapper(object):
     def add_queue(self, queue_name, buffer_size):
         self.redis_connection.hset(self.REDIS_QUEUE_SIZE_MAP_KEY, queue_name, buffer_size)
 
+    def delete_queue(self, queue_name):
+        self.redis_connection.hdel(self.REDIS_QUEUE_SIZE_MAP_KEY, queue_name)
+
     def restore_queue(self):
         queue_map = self.redis_connection.hgetall(self.REDIS_QUEUE_SIZE_MAP_KEY)
         return queue_map

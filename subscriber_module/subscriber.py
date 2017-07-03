@@ -7,27 +7,28 @@ from common_server_module.socket_server import BQueueSocketServer
 from common_util.api_response import ApiResponse
 from common_util.common_logger import logger
 
-
 # Subscriber class send request to queue server to subscribe the ip:port.
 # If queue server having anything for this subscriber, It sends to this subscriber on its server port
 from common_util.constants import LOCALHOST, BUFFER_SIZE
 
 
 class BQueueSubscriber(object):
-    def __init__(self, sock=None, hostname=None, port=None, callback=None):
+    def __init__(self, sock=None, hostname=None, bq_port=None, s_port=11000, callback=None):
         if sock is None:
             self.sock = socket.socket(
                 socket.AF_INET, socket.SOCK_STREAM)
             if not hostname:
                 self.hostname = LOCALHOST
-            if not port:
+            if not bq_port:
                 self.port = 10000
+            else:
+                self.port = bq_port
         else:
             self.sock = sock
 
-        self.sock.connect((hostname, port))
+        self.sock.connect((hostname, self.port))
 
-        self.server_port = 11000
+        self.server_port = s_port if s_port else 11000
         self.consumer_listener = BQueueSocketServer(**{'port': self.server_port})
         self.consumer_listener.bind_thread = self.bind_thread
         self.callback = callback

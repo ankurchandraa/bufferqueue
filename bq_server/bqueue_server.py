@@ -29,6 +29,9 @@ class BQueueServerThread(ThreadedServer):
         elif data.get('operation') == 'subscribe':
             logger.info("queue subscribe request received")
             return buffer_map.subscribe_to_queue(data.get('host'), data.get('queue'))
+        elif data.get('operation') == 'delete_queue':
+            logger.info("queue delete request received")
+            return buffer_map.delete_queue(data.get('queue'))
         elif data.get('queue'):
             logger.info("add data to queue request received")
             return buffer_map.append_data_to_queue(data.get('queue'), data.get('data'))

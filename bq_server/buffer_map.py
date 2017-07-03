@@ -40,15 +40,35 @@ class BufferQueueMap(object):
         return None
 
     def add_queue(self, queue_name, buffer_size):
+        self.lock.acquire()
+        if self.is_queue_exists(queue_name):
+            self.lock.release()
+            return ApiResponse(True, 'queue already exists')
         self.persistent_wrapper.add_queue(queue_name, buffer_size)
         self.queue_size_definition[queue_name] = buffer_size
+        self.lock.release()
         return ApiResponse(True, 'queue created')
+
+    def is_queue_exists(self, queue_name):
+        if queue_name in  self.queue_size_definition:
+            return True
+        return False
 
     def subscribe_to_queue(self, subscriber_id, queue):
         response = ApiResponse(True, "Succesfully subscribed to {}".format(queue))
         self.persistent_wrapper.persist_subscriber(queue, subscriber_id)
         self.subscriber_map[queue].add(subscriber_id)
         return response
+
+    def delete_queue(self, queue_name):
+        self.lock.acquire()
+        if self.is_queue_exists(queue_name):
+            self.lock.release()
+            return ApiResponse(True, 'queue does not exists')
+        self.persistent_wrapper.delete_queue(queue_name)
+        del self.queue_size_definition[queue_name]
+        self.lock.release()
+        return ApiResponse(True, 'queue deleted')
 
     def append_data_to_queue(self, queue, data):
         try:
